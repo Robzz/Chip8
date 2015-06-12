@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include "Chip8.h"
 #include "Chip8_config.h"
-#include "Chip8_FileException.h"
+#include "errors.h"
 
 using namespace std;
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     Also, merge the error classes in a single file. Or at the very least, in a separate
     directory.
     */
-    catch(Chip8_Exception const& e) {
+    catch(Chip8Exception const& e) {
         // TODO : why the fuck did I print on the screen? Do i not have a friggin' logger?
         cerr << "Error loading SDL" << endl;
         return 1;

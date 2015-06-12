@@ -1,7 +1,5 @@
 #include "Chip8.h"
-#include "Chip8_InitError.h"
-#include "Chip8_FileException.h"
-#include "Chip8_UnknownOpcode.h"
+#include "errors.h"
 #include <SDL2/SDL.h>
 #include <fstream>
 #include <string>
@@ -55,7 +53,7 @@ try :
     m_SDLRenderer = SDL_CreateRenderer(m_SDLWindow, -1, 0);
 
     if(!(m_SDLWindow && m_SDLRenderer)) {
-        throw Chip8_InitError();
+        throw Chip8InitError();
     }
 
     BOOST_LOG_TRIVIAL(info) << "SDL initialized successfully";
@@ -94,11 +92,11 @@ try :
     for(int i = 80 ; i != 4096 ; ++i) {
         _Memory[i] = 0;
     }
-} catch(Chip8_FileException const& e) {
+} catch(Chip8FileError const& e) {
     BOOST_LOG_TRIVIAL(fatal) << "Cannot initialize SDL : " << e.what();
     SDL_DestroyRenderer(m_SDLRenderer);
     SDL_DestroyWindow(m_SDLWindow);
-} catch(Chip8_InitError e) {
+} catch(Chip8InitError e) {
     cout << "Error initialising SDL : " << e.what() << endl;
     if(m_SDLRenderer)
         SDL_DestroyRenderer(m_SDLRenderer);
@@ -149,7 +147,7 @@ void Chip8::m_ReadOptions(int argc, char** argv) {
     ifstream cfgFile(cfgFileName);
     if(!cfgFile.is_open()) {
         if(vmap.count("cfg-file"))
-            throw Chip8_FileException("Couldn't load config file.");
+            throw Chip8FileError("Couldn't load config file.");
     } else {
         cfgFile.seekg(0);
         program_options::store(program_options::parse_config_file(cfgFile, config), vmap);
@@ -161,7 +159,7 @@ void Chip8::m_ReadOptions(int argc, char** argv) {
         m_PrintHelp = true;
     } else {
         if(!vmap.count("rom")) {
-            throw Chip8_FileException("Please specify rom file! (option --rom)");
+            throw Chip8FileError("Please specify rom file! (option --rom)");
         } else
             m_RomPath = vmap["rom"].as<string>();
 
@@ -176,7 +174,7 @@ void Chip8::m_ReadOptions(int argc, char** argv) {
 int Chip8::loadRom() {
     ifstream romFile(m_RomPath, ios_base::in | ios_base::binary | ios_base::ate);
     if(!(romFile.is_open())) {
-        throw Chip8_FileException(m_RomPath);
+        throw Chip8FileError(m_RomPath);
     }
 
     // Get rom size and load it at memory address 0x0200
@@ -203,7 +201,7 @@ void Chip8::run() {
         loadRom();
         m_CPUThread = thread(&Chip8::_CPUThread, this);
         m_ClockThread = thread(&Chip8::_ClockThread, this);
-    } catch(Chip8_FileException const& e) {
+    } catch(Chip8FileError const& e) {
         BOOST_LOG_TRIVIAL(error) << "Error loading rom " << e.what();
         return;
     } catch(thread_resource_error const& e) {
@@ -466,10 +464,10 @@ void Chip8::_CPUThread() {
                 }
                 break;
             default:
-                throw Chip8_UnknownOpcode(hiByte * 0x100 + lowByte);
+                throw Chip8UnknownOpcodeError(hiByte * 0x100 + lowByte);
             }
             boost::this_thread::sleep_until(instrStartTime + cycleDuration);
-        } catch(Chip8_UnknownOpcode e) {
+        } catch(Chip8UnknownOpcodeError e) {
             cerr << "Warning : unknown opcode. Trying to continue..." << endl;
             BOOST_LOG_TRIVIAL(error) << e.what();
         } catch(...) {
