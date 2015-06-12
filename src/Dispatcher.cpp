@@ -8,6 +8,11 @@ using namespace boost::chrono;
 typedef duration<long long, microseconds> instr_duration;
 typedef time_point<high_resolution_clock> hr_time_point;
 
+/*
+TODO
+Why did I make a class this useless?
+*/
+
 Dispatcher::Dispatcher() : m_instrCount(0)
 { }
 

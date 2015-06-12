@@ -15,9 +15,20 @@ int main(int argc, char* argv[]) {
     cout << "Starting Chip8 v"  << Chip8_VERSION_MAJOR << '.' << Chip8_VERSION_MINOR << endl;
     Chip8* context;
     try {
+        /*
+        TODO
+        It would be much cleaner to parse command line options here and not
+        in Chip8's contructor.
+        */
         context = new Chip8(argc, argv);
     }
+    /*
+    TODO
+    Also, merge the error classes in a single file. Or at the very least, in a separate
+    directory.
+    */
     catch(Chip8_Exception const& e) {
+        // TODO : why the fuck did I print on the screen? Do i not have a friggin' logger?
         cerr << "Error loading SDL" << endl;
         return 1;
     }

@@ -14,10 +14,9 @@ Chip8_UnknownOpcode::~Chip8_UnknownOpcode() noexcept
   //dtor
 }
 
-Chip8_UnknownOpcode::Chip8_UnknownOpcode(const Chip8_UnknownOpcode& other) noexcept
-{
-  //copy ctor
-}
+Chip8_UnknownOpcode::Chip8_UnknownOpcode(const Chip8_UnknownOpcode& other) noexcept :
+    m_opCode(other.m_opCode)
+{ }
 
 const char* Chip8_UnknownOpcode::what() const noexcept {
   ostringstream ss;

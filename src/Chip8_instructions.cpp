@@ -1,6 +1,11 @@
 #include "Chip8.h"
 #include <SDL2/SDL.h>
 
+/*
+TODO
+May not be completely stupid to add a comment or two, heh?
+Other than that, most of this looks okay-ish.
+*/
 
 void Chip8::_instr00E0() {
   SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 0xFF);

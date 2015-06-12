@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <fstream>
 #include <string>
+// TODO : Boost::chrono ? Well, chrono has been standardized now. Can I get rid of it?
 #include <boost/chrono.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/file.hpp>
@@ -45,6 +46,11 @@ try :
     m_ReadOptions(argc, argv);
 
     // Initialize SDL
+    /*
+    TODO
+    No biggie here, but IIRC, there are better and simpler ways to initialize the SDL.
+    Isn't there a SDL_CreateWindowAndRenderer or something?
+    */
     m_SDLWindow = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 64 * m_PixelSize, 32 * m_PixelSize, SDL_WINDOW_HIDDEN);
     m_SDLRenderer = SDL_CreateRenderer(m_SDLWindow, -1, 0);
 
@@ -55,6 +61,7 @@ try :
     BOOST_LOG_TRIVIAL(info) << "SDL initialized successfully";
 
     // Initialize stack and register arrays
+    // TODO : memset, motherfucker
     for(int i = 0 ; i != 16 ; ++i) {
         _CallStack[i] = 0;
         _V[i] = 0;
@@ -83,6 +90,7 @@ try :
     _Memory[76] = 128; _Memory[77] = 240; _Memory[78] = 128; _Memory[79] = 128;
 
     // Filling the rest with 0's
+    // TODO : I really can't believe I didn't know memset 2 year ago.
     for(int i = 80 ; i != 4096 ; ++i) {
         _Memory[i] = 0;
     }
@@ -111,6 +119,15 @@ Chip8::~Chip8() noexcept {
     SDL_DestroyWindow(m_SDLWindow);
 }
 
+/*
+TODO
+I don't even know where to begin here. I'm gonna have to rewrite to whole damn thing.
+Booh. Ugly. Bad me.
+Also, this has like absolutely nothing to do here. Move it out.
+Oh yeah, also add an option to generate a config file. Did you really expect to remember
+what it is supposed to look like? Do you really want to read this function every time you forget?
+And finally, print the usage string when the options are incorrect. Yeah, you forgot that. Idiot.
+*/
 void Chip8::m_ReadOptions(int argc, char** argv) {
     // Declare command line options
     program_options::options_description generic("Generic options");
@@ -175,6 +192,8 @@ int Chip8::loadRom() {
 
 void Chip8::run() {
     if(m_PrintHelp) {
+        // TODO : this has nothing to do here. No-thing. Move it out with the command line parsing
+
         // In that case, we don't actually run.
         return;
     }
@@ -198,6 +217,7 @@ void Chip8::run() {
     bool end = false;
     SDL_Event event;
 
+    // TODO : is this really necessary? There isn't a GUI anyway, no point in hiding the window.
     // We can now show the SDL window, and hide it when the loop ends.
     SDL_ShowWindow(m_SDLWindow);
 
@@ -207,6 +227,10 @@ void Chip8::run() {
             bool pressed = (event.type == SDL_KEYDOWN); // find out which one it was...
             m_KeyStateMutex.lock();
             switch(event.key.keysym.sym) { // and update keystate
+            /*
+            TODO
+            Not pretty. There's gotta be a better, less dumb way.
+            */
             case SDLK_KP_0:
                 _KeyboardState.set(0, pressed);
                 break;
@@ -284,6 +308,7 @@ bool Chip8::xorPixel(int x, int y, bool val) {
 }
 
 void Chip8::_ClockThread() {
+    // TODO : shouldn't this value depend from the configured CPU clock? I'm pretty sure it should
     chrono::duration<long, micro> step(16666);
     while(m_KeepThreadsAlive) {
         if(_DT || _ST) {
@@ -319,6 +344,10 @@ void Chip8::_CPUThread() {
         _PC+=2;
 
         try {
+            /*
+            TODO
+            There might be a better way than this. Think about it. 100loc long switch? Ugly.
+            */
             switch(code) {
             case 0:
                 if(NNN == 0x0E0) {
@@ -441,10 +470,10 @@ void Chip8::_CPUThread() {
             }
             boost::this_thread::sleep_until(instrStartTime + cycleDuration);
         } catch(Chip8_UnknownOpcode e) {
-            cout << "Warning : unknown opcode. Trying to continue..." << endl;
+            cerr << "Warning : unknown opcode. Trying to continue..." << endl;
             BOOST_LOG_TRIVIAL(error) << e.what();
         } catch(...) {
-            cout << "Unknown exception on CPU thread. Aborting.\nSee log file for details." << endl;
+            cerr << "Unknown exception on CPU thread. Aborting.\nSee log file for details." << endl;
             BOOST_LOG_TRIVIAL(fatal) << "Unknown exception in CPU thread.";
         }
     }
