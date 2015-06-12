@@ -1,4 +1,7 @@
-bin/Debug/*.ch8
-bin/Release/*.ch8
-chip8 resources/
+bin/*
 obj/*
+CMakeCache.txt
+CMakeFiles/*
+*.cmake
+Makefile
+include/Chip8_config.h
