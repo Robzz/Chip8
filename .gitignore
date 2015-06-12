@@ -1,0 +1,14 @@
+bin/Debug/*.ch8
+bin/Release/*.ch8
+Chip-8 Demos/*
+Chip-8 Games/*
+Chip-8 Programs/*
+Chip-8X and Hybrids/*
+Chip-8 Hires/*
+MegaChip8 Demos/*
+MegaChip8 Games/*
+SuperChip Demos/*
+SuperChip Games/*
+SuperChip Test Programs/*
+*.txt
+obj/*
