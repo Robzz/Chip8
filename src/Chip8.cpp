@@ -3,8 +3,8 @@
 #include <SDL2/SDL.h>
 #include <fstream>
 #include <string>
-// TODO : Boost::chrono ? Well, chrono has been standardized now. Can I get rid of it?
-#include <boost/chrono.hpp>
+#include <cstring>
+#include <chrono>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
@@ -20,7 +20,7 @@ try :
     m_Dispatch(),
     m_SDLWindow(),
     m_SDLRenderer(),
-    m_RandGen(chrono::system_clock::now().time_since_epoch().count()),
+    m_RandGen(std::chrono::system_clock::now().time_since_epoch().count()),
     _FrameBuffer(),
     _KeyboardState(),
     _CallStack(),
@@ -59,11 +59,8 @@ try :
     BOOST_LOG_TRIVIAL(info) << "SDL initialized successfully";
 
     // Initialize stack and register arrays
-    // TODO : memset, motherfucker
-    for(int i = 0 ; i != 16 ; ++i) {
-        _CallStack[i] = 0;
-        _V[i] = 0;
-    }
+    memset(_CallStack, 0, 16*sizeof(_CallStack[0]));
+    memset(_CallStack, 0, 16*sizeof(_V[0]));
 
     // Initialize Sprite Data
     _Memory[0] = 240;  _Memory[1] = 144;  _Memory[2] = 144;  _Memory[3] = 144;
@@ -88,10 +85,7 @@ try :
     _Memory[76] = 128; _Memory[77] = 240; _Memory[78] = 128; _Memory[79] = 128;
 
     // Filling the rest with 0's
-    // TODO : I really can't believe I didn't know memset 2 year ago.
-    for(int i = 80 ; i != 4096 ; ++i) {
-        _Memory[i] = 0;
-    }
+    memset(&(_Memory[80]), 0, (4096-80)*sizeof(_Memory[0]));
 } catch(Chip8FileError const& e) {
     BOOST_LOG_TRIVIAL(fatal) << "Cannot initialize SDL : " << e.what();
     SDL_DestroyRenderer(m_SDLRenderer);
@@ -307,7 +301,9 @@ bool Chip8::xorPixel(int x, int y, bool val) {
 
 void Chip8::_ClockThread() {
     // TODO : shouldn't this value depend from the configured CPU clock? I'm pretty sure it should
-    chrono::duration<long, micro> step(16666);
+    // Well, after some thinking, it isn't. This value is what actually speeds up/slows down the
+    // emulation, not really the CPU clock. I should experiment with the values to make sure.
+    std::chrono::microseconds step(16666);
     while(m_KeepThreadsAlive) {
         if(_DT || _ST) {
             m_DTmutex.lock();
@@ -319,7 +315,7 @@ void Chip8::_ClockThread() {
             }
             m_DTmutex.unlock();
         }
-        this_thread::sleep_for(step);
+        std::this_thread::sleep_for(step);
     }
 }
 
@@ -328,10 +324,10 @@ void Chip8::_CPUThread() {
     unsigned short NNN;
 
     // Compute clock cycle time
-    chrono::duration<long long, micro> cycleDuration(1000000 / m_Chip8CpuFreq);
+    std::chrono::microseconds cycleDuration(1000000 / m_Chip8CpuFreq);
 
     while(m_KeepThreadsAlive) {
-        chrono::high_resolution_clock::time_point instrStartTime = chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point instrStartTime = std::chrono::high_resolution_clock::now();
         lowByte = _Memory[_PC + 1];
         hiByte = _Memory[_PC];
         code = (hiByte & 0xF0) / 0x10;
@@ -466,7 +462,7 @@ void Chip8::_CPUThread() {
             default:
                 throw Chip8UnknownOpcodeError(hiByte * 0x100 + lowByte);
             }
-            boost::this_thread::sleep_until(instrStartTime + cycleDuration);
+            this_thread::sleep_until(instrStartTime + cycleDuration);
         } catch(Chip8UnknownOpcodeError e) {
             cerr << "Warning : unknown opcode. Trying to continue..." << endl;
             BOOST_LOG_TRIVIAL(error) << e.what();

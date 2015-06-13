@@ -5,18 +5,13 @@
 #include "Dispatcher.h"
 #include <random>
 #include <bitset>
-#include <boost/thread.hpp>
+#include <thread>
+#include <mutex>
 #include <boost/program_options.hpp>
 
 // Forward declarations
 struct SDL_Window;
 struct SDL_Renderer;
-
-// Chip 8 defines
-
-
-// Boost config defines
-#define BOOST_USES_CHRONO YES
 
 class Chip8
 {
@@ -53,10 +48,10 @@ class Chip8
     unsigned short _I;
 
     bool m_KeepThreadsAlive;
-    boost::mutex m_DTmutex;
-    boost::mutex m_KeyStateMutex;
-    boost::thread m_CPUThread;
-    boost::thread m_ClockThread;
+    std::mutex m_DTmutex;
+    std::mutex m_KeyStateMutex;
+    std::thread m_CPUThread;
+    std::thread m_ClockThread;
 
     // These functions are for internal use, hence private
       // Parses command line and file

@@ -11,7 +11,7 @@ cmake_policy(SET CMP0015 OLD)
 include(FindBoost)
 find_package(Boost
              REQUIRED             # Fail with error if Boost is not found
-             COMPONENTS thread chrono system log program_options filesystem
+             COMPONENTS thread system filesystem log program_options
 )
 set(Boost_USE_STATIC_LIBS ON)
 

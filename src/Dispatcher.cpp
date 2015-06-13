@@ -1,12 +1,11 @@
 #include "Chip8_Typedefs.h"
 #include "Dispatcher.h"
 #include <cstdarg>
-#include <boost/chrono.hpp>
+#include <chrono>
 
-using namespace boost::chrono;
+using namespace std;
 
-typedef duration<long long, microseconds> instr_duration;
-typedef time_point<high_resolution_clock> hr_time_point;
+typedef chrono::time_point<chrono::high_resolution_clock> hr_time_point;
 
 /*
 TODO
