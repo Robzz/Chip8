@@ -39,7 +39,7 @@ set_property(TARGET Chip8_bin PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Silence the crapload of boost issued deprecation warnings
 # (alternatively, investigate? There's so many of them I doubt the boost folks haven't thought it through.)
-add_definitions("-Wno-deprecated-declarations")
+add_definitions("-Wno-deprecated-declarations -DBOOST_LOG_DYN_LINK")
 
 # Include directories
 include_directories("include" ${Boost_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
