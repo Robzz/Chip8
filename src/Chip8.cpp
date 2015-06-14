@@ -1,3 +1,18 @@
+/*  Chip8++ - A CHIP-8 emulator.
+    Copyright (C) 2015  Robin Chavignat
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include "Chip8.h"
 #include "errors.h"
 #include <SDL.h>
@@ -78,16 +93,6 @@ try :
 
     // Filling the rest with 0's
     memset(&(_Memory[80]), 0, (4096-80)*sizeof(_Memory[0]));
-} catch(Chip8FileError const& e) {
-    BOOST_LOG_TRIVIAL(fatal) << "Cannot initialize SDL : " << e.what();
-    SDL_DestroyRenderer(m_SDLRenderer);
-    SDL_DestroyWindow(m_SDLWindow);
-} catch(Chip8InitError e) {
-    cout << "Error initialising SDL : " << e.what() << endl;
-    if(m_SDLRenderer)
-        SDL_DestroyRenderer(m_SDLRenderer);
-    if(m_SDLWindow)
-        SDL_DestroyWindow(m_SDLWindow);
 } catch(...) {
     throw;
 }

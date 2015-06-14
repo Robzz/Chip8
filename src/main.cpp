@@ -1,4 +1,20 @@
+/*  Chip8++ - A CHIP-8 emulator.
+    Copyright (C) 2015  Robin Chavignat
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 #include <iostream>
+#include <exception>
 #include <boost/log/trivial.hpp>
 #include <SDL.h>
 #include "Chip8.h"
@@ -12,7 +28,7 @@ using namespace std;
 // 1 : Error loading SDL
 // 2 : Error loading rom file
 int main(int argc, char* argv[]) {
-    cout << "Starting Chip8 v"  << Chip8_VERSION_MAJOR << '.' << Chip8_VERSION_MINOR << endl;
+    cout << "Starting Chip8_PROGRAM_NAME v"  << Chip8_VERSION_MAJOR << '.' << Chip8_VERSION_MINOR << endl;
     Chip8* context;
     try {
         /*
@@ -23,12 +39,13 @@ int main(int argc, char* argv[]) {
         context = new Chip8(argc, argv);
     }
     catch(Chip8Exception const& e) {
-        // TODO : why the fuck did I print on the screen? Do i not have a friggin' logger?
-        cerr << "Error initializing the Chip8 emulator." << endl;
+        cerr << "Error initializing Chip8_PROGRAM_NAME." << endl;
+        BOOST_LOG_TRIVIAL(fatal) << e.what();
         return 1;
     }
-    catch(...) {
+    catch(exception e) {
         cerr << "An unknown exception occured." << endl;
+        BOOST_LOG_TRIVIAL(fatal) << e.what();
         throw;
     }
 

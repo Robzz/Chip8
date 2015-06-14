@@ -2,8 +2,9 @@ cmake_minimum_required (VERSION 2.6)
 project (Chip8)
 
 # Version number
-set (Chip8_VERSION_MAJOR 0)
-set (Chip8_VERSION_MINOR 1)
+set(Chip8_VERSION_MAJOR 0)
+set(Chip8_VERSION_MINOR 1)
+set(Chip8_PROGRAM_NAME "Chip8++")
 
 # cmake_policy(SET CMP0015 OLD)
 
