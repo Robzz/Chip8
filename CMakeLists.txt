@@ -13,7 +13,6 @@ find_package(Boost
              REQUIRED             # Fail with error if Boost is not found
              COMPONENTS thread system filesystem log program_options
 )
-set(Boost_USE_STATIC_LIBS ON)
 
 # Locate SDL2 with pkg-config
 #set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
@@ -39,7 +38,10 @@ set_property(TARGET Chip8_bin PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Silence the crapload of boost issued deprecation warnings
 # (alternatively, investigate? There's so many of them I doubt the boost folks haven't thought it through.)
-add_definitions("-Wno-deprecated-declarations -DBOOST_LOG_DYN_LINK")
+add_definitions("-Wno-deprecated-declarations")
+if(NOT WIN32)
+     add_definitions("-DBOOST_LOG_DYN_LINK")
+endif()
 
 # Include directories
 include_directories("include" ${Boost_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
