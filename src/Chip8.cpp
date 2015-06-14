@@ -14,25 +14,25 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include "Chip8.h"
-#include "errors.h"
 #include <SDL.h>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <cstring>
 #include <chrono>
 #include <boost/log/trivial.hpp>
-#include <boost/log/utility/setup/file.hpp>
+
+#include "Chip8.h"
+#include "errors.h"
 
 using namespace std;
 using namespace boost;
 
-Chip8::Chip8(int argc, char* argv[])
+Chip8::Chip8(Chip8Config* cfg)
 try :
-    m_PrintHelp(false),
-    m_PixelSize(4),
-    m_Chip8CpuFreq(1000),
-    m_RomPath(),
+    m_PixelSize(cfg->pixelSize()),
+    m_Chip8CpuFreq(cfg->cpuFreq()),
+    m_RomPath(cfg->romName()),
     m_Dispatch(),
     m_SDLWindow(),
     m_SDLRenderer(),
@@ -52,16 +52,9 @@ try :
     m_KeyStateMutex(),
     m_CPUThread(),
     m_ClockThread() {
-    // Initialize log first
-    log::add_file_log("chip8.log");
-    log::core::get()->set_filter(log::trivial::severity >= log::trivial::info);
-    BOOST_LOG_TRIVIAL(info) << "Logging modules initialized, launching chip8!";
-
-    m_ReadOptions(argc, argv);
-
     // Initialize SDL
     if(SDL_CreateWindowAndRenderer(64 * m_PixelSize, 32 * m_PixelSize, SDL_WINDOW_HIDDEN, &m_SDLWindow, &m_SDLRenderer)) {
-        throw Chip8InitError();
+        throw Chip8InitError("Cannot initialize SDL");
     }
 
     BOOST_LOG_TRIVIAL(info) << "SDL initialized successfully";
@@ -109,60 +102,6 @@ Chip8::~Chip8() noexcept {
     SDL_DestroyWindow(m_SDLWindow);
 }
 
-/*
-TODO
-I don't even know where to begin here. I'm gonna have to rewrite to whole damn thing.
-Booh. Ugly. Bad me.
-Also, this has like absolutely nothing to do here. Move it out.
-Oh yeah, also add an option to generate a config file. Did you really expect to remember
-what it is supposed to look like? Do you really want to read this function every time you forget?
-And finally, print the usage string when the options are incorrect. Yeah, you forgot that. Idiot.
-*/
-void Chip8::m_ReadOptions(int argc, char** argv) {
-    // Declare command line options
-    program_options::options_description generic("Generic options");
-    generic.add_options()("help", "Print help message")
-    ("cfg-file", program_options::value<string>(), "Config file")
-    ("rom", program_options::value<string>(), "ROM file to load");
-
-    // And now declare config file options
-    program_options::options_description config("Configuration options");
-    config.add_options()("config.clock-freq", program_options::value<int>(), "CPU Clock frequency, in Hz")
-    ("display.pixelSize", program_options::value<unsigned int>(), "Chip8 pixel size, in pixels");
-
-    // Read and parse options
-    program_options::variables_map vmap;
-    program_options::store(program_options::parse_command_line(argc, argv, generic), vmap);
-    program_options::notify(vmap);
-
-    string cfgFileName = vmap.count("cfg-file") ? vmap["cfg-file"].as<string>() : "Chip8.ini" ;
-    ifstream cfgFile(cfgFileName);
-    if(!cfgFile.is_open()) {
-        if(vmap.count("cfg-file"))
-            throw Chip8FileError("Couldn't load config file.");
-    } else {
-        cfgFile.seekg(0);
-        program_options::store(program_options::parse_config_file(cfgFile, config), vmap);
-    }
-    program_options::notify(vmap);
-
-    if(vmap.count("help")) {
-        cout << generic << endl;
-        m_PrintHelp = true;
-    } else {
-        if(!vmap.count("rom")) {
-            throw Chip8FileError("Please specify rom file! (option --rom)");
-        } else
-            m_RomPath = vmap["rom"].as<string>();
-
-        // Config file options
-        if(vmap.count("config.clock-freq"))
-            m_Chip8CpuFreq = vmap["config.clock-freq"].as<int>();
-        if(vmap.count("display.pixelSize"))
-            m_PixelSize = vmap["display.pixelSize"].as<unsigned int>();
-    }
-}
-
 int Chip8::loadRom() {
     ifstream romFile(m_RomPath, ios_base::in | ios_base::binary | ios_base::ate);
     if(!(romFile.is_open())) {
@@ -181,22 +120,16 @@ int Chip8::loadRom() {
 }
 
 void Chip8::run() {
-    if(m_PrintHelp) {
-        // TODO : this has nothing to do here. No-thing. Move it out with the command line parsing
-
-        // In that case, we don't actually run.
-        return;
-    }
-
-    // Then we gotta load the ROM
+    // Load the ROM
     try {
+        BOOST_LOG_TRIVIAL(error) << "Loading ROM " << m_RomPath;
         loadRom();
         m_CPUThread = thread(&Chip8::_CPUThread, this);
         m_ClockThread = thread(&Chip8::_ClockThread, this);
     } catch(Chip8FileError const& e) {
         BOOST_LOG_TRIVIAL(error) << "Error loading rom " << e.what();
-        return;
-    } catch(thread_resource_error const& e) {
+        throw;
+    } catch(system_error const& e) {
         BOOST_LOG_TRIVIAL(fatal) << "Couldn't create thread.";
         throw;
     } catch(...) {

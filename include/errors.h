@@ -44,11 +44,12 @@ class Chip8FileError : public Chip8Exception
 class Chip8InitError : public Chip8Exception
 {
   public:
-    Chip8InitError() noexcept;
+    Chip8InitError(std::string const& message) noexcept;
     virtual ~Chip8InitError() noexcept;
     Chip8InitError(const Chip8InitError& other) noexcept;
     virtual const char* what() const noexcept;
   protected:
+      std::string m_message;
 };
 
 class Chip8UnknownOpcodeError : public Chip8Exception

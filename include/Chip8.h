@@ -17,32 +17,32 @@
 #ifndef CHIP8_H
 #define CHIP8_H
 
-#include "Chip8_Typedefs.h"
-#include "Dispatcher.h"
 #include <random>
 #include <bitset>
 #include <thread>
 #include <mutex>
-#include <boost/program_options.hpp>
+
+#include "Chip8_Typedefs.h"
+#include "Chip8Config.h"
+#include "Dispatcher.h"
 
 // Forward declarations
 struct SDL_Window;
 struct SDL_Renderer;
 
-class Chip8
-{
+class Chip8 {
   public:
     enum Chip8_Keydown { Key_0 = 0x1, Key_1 = 0x2, Key_2 = 0x4, Key_3 = 0x8,
-                         Key_4 = 0x10, Key_5 = 0x20, Key_6 = 0x40, Key_7 = 0x80,
-                         Key_8 = 0x100, Key_9 = 0x200, Key_A = 0x400, Key_B = 0x800,
-                         Key_C = 0x1000, Key_D = 0x2000, Key_E = 0x4000, Key_F = 0x8000 };
-    Chip8(int argc, char* argv[]);
+            Key_4 = 0x10, Key_5 = 0x20, Key_6 = 0x40, Key_7 = 0x80,
+            Key_8 = 0x100, Key_9 = 0x200, Key_A = 0x400, Key_B = 0x800,
+            Key_C = 0x1000, Key_D = 0x2000, Key_E = 0x4000, Key_F = 0x8000
+                       };
+    Chip8(Chip8Config* cfg);
     // Starts the emulation, the main loop takes place here
     void run();
     virtual ~Chip8() noexcept;
 
   private:
-    bool m_PrintHelp;
     int m_PixelSize;
     int m_Chip8CpuFreq;
     std::string m_RomPath;
@@ -69,22 +69,18 @@ class Chip8
     std::thread m_CPUThread;
     std::thread m_ClockThread;
 
-    // These functions are for internal use, hence private
-      // Parses command line and file
-      void m_ReadOptions(int argc, char** argv);
+    // Loads the ROM whose path is stored in m_Rompath
+    int loadRom();
 
-      // Loads the ROM whose path is stored in m_Rompath
-      int loadRom();
+    // XOR's the pixel at (x,y) coordinates over framebuffer
+    // Returns true in case of collision (val = framebuffer(x,y) = true)
+    bool xorPixel(int x, int y, bool val);
 
-      // XOR's the pixel at (x,y) coordinates over framebuffer
-      // Returns true in case of collision (val = framebuffer(x,y) = true)
-      bool xorPixel(int x, int y, bool val);
+    // Timer tick thread
+    void _ClockThread();
 
-      // Timer tick thread
-      void _ClockThread();
-
-      // CPU emu thread
-      void _CPUThread();
+    // CPU emu thread
+    void _CPUThread();
 
     // Chip8 instruction set
     void _instr00E0(); // CLS (CLear Screen)

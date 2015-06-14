@@ -46,14 +46,18 @@ const char* Chip8FileError::what() const noexcept {
 Chip8FileError::~Chip8FileError() noexcept { }
 
 
-Chip8InitError::Chip8InitError() noexcept { }
+Chip8InitError::Chip8InitError(string const& message) noexcept :
+    m_message(message)
+{ }
 
 Chip8InitError::~Chip8InitError() noexcept { }
 
-const char* Chip8InitError::what() const noexcept{
-  return SDL_GetError(); }
+Chip8InitError::Chip8InitError(const Chip8InitError& other) noexcept :
+    m_message(other.m_message) { }
 
-Chip8InitError::Chip8InitError(const Chip8InitError& other) noexcept { }
+const char* Chip8InitError::what() const noexcept {
+    return m_message.c_str();
+}
 
 
 Chip8UnknownOpcodeError::Chip8UnknownOpcodeError(unsigned short opCode) noexcept :

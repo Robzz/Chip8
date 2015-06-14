@@ -51,7 +51,7 @@ link_directories(${SDL2_LIBRARY_DIRS})
 target_link_libraries(Chip8_bin ${SDL2_LDFLAGS} ${Boost_LIBRARIES})
 
 # Output path set to build type
-set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})
+set(EXECUTABLE_OUTPUT_PATH bin)
 
 # Generate the configuration header
 configure_file (
