@@ -13,6 +13,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #define Chip8_VERSION_MAJOR @Chip8_VERSION_MAJOR@
 #define Chip8_VERSION_MINOR @Chip8_VERSION_MINOR@
 #define Chip8_PROGRAM_NAME @Chip8_PROGRAM_NAME@
