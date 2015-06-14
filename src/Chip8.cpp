@@ -44,15 +44,7 @@ try :
     m_ReadOptions(argc, argv);
 
     // Initialize SDL
-    /*
-    TODO
-    No biggie here, but IIRC, there are better and simpler ways to initialize the SDL.
-    Isn't there a SDL_CreateWindowAndRenderer or something?
-    */
-    m_SDLWindow = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 64 * m_PixelSize, 32 * m_PixelSize, SDL_WINDOW_HIDDEN);
-    m_SDLRenderer = SDL_CreateRenderer(m_SDLWindow, -1, 0);
-
-    if(!(m_SDLWindow && m_SDLRenderer)) {
+    if(SDL_CreateWindowAndRenderer(64 * m_PixelSize, 32 * m_PixelSize, SDL_WINDOW_HIDDEN, &m_SDLWindow, &m_SDLRenderer)) {
         throw Chip8InitError();
     }
 
@@ -227,13 +219,13 @@ void Chip8::run() {
                 _KeyboardState.set(0, pressed);
                 break;
             case SDLK_KP_1:
-                _KeyboardState.set(1, pressed);
+                _KeyboardState.set(7, pressed);
                 break;
             case SDLK_KP_2:
-                _KeyboardState.set(2, pressed);
+                _KeyboardState.set(8, pressed);
                 break;
             case SDLK_KP_3:
-                _KeyboardState.set(3, pressed);
+                _KeyboardState.set(9, pressed);
                 break;
             case SDLK_KP_4:
                 _KeyboardState.set(4, pressed);
@@ -245,13 +237,13 @@ void Chip8::run() {
                 _KeyboardState.set(6, pressed);
                 break;
             case SDLK_KP_7:
-                _KeyboardState.set(7, pressed);
+                _KeyboardState.set(1, pressed);
                 break;
             case SDLK_KP_8:
-                _KeyboardState.set(8, pressed);
+                _KeyboardState.set(2, pressed);
                 break;
             case SDLK_KP_9:
-                _KeyboardState.set(9, pressed);
+                _KeyboardState.set(3, pressed);
                 break;
             case SDLK_a:
                 _KeyboardState.set(0xA, pressed);
