@@ -30,7 +30,7 @@ file(GLOB_RECURSE
      header_files
      include/*.h)
 
-add_executable(Chip8_bin ${cpp_files} ${header_files} ".gitignore")
+add_executable(Chip8_bin ${cpp_files} ${header_files} ".gitignore" "README.md" "LICENSE")
 
 # Enable C++11
 set_property(TARGET Chip8_bin PROPERTY CXX_STANDARD 11)
