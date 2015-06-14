@@ -1,6 +1,6 @@
 #include "errors.h"
 #include <sstream>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 using namespace std;
 

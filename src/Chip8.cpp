@@ -1,6 +1,6 @@
 #include "Chip8.h"
 #include "errors.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <fstream>
 #include <string>
 #include <cstring>

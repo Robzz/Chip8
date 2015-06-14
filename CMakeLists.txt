@@ -5,7 +5,7 @@ project (Chip8)
 set (Chip8_VERSION_MAJOR 0)
 set (Chip8_VERSION_MINOR 1)
 
-cmake_policy(SET CMP0015 OLD)
+# cmake_policy(SET CMP0015 OLD)
 
 # Find the boost libraries the project depends on
 include(FindBoost)
@@ -15,9 +15,11 @@ find_package(Boost
 )
 set(Boost_USE_STATIC_LIBS ON)
 
-# TODO : this is a quick and dirty workaround. Fix it. pkg-config?
-# Also, this forces to specify the cmake_policy CMP0015.
-link_directories("lib/SDL2-2.0.3/x86_64-w64-mingw32/lib")
+# Locate SDL2 with pkg-config
+#set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
+find_package(PkgConfig)
+pkg_check_modules(SDL2 REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH sdl2)
+include_directories()
 
 # Generate the list of source files. Include ALL files that are commonly edited, so that they
 # appear in the generated project files (e.g. Code::Blocks)
@@ -40,11 +42,10 @@ set_property(TARGET Chip8_bin PROPERTY CXX_STANDARD_REQUIRED ON)
 add_definitions("-Wno-deprecated-declarations")
 
 # Include directories
-# Again, quick and dirty fix...
-include_directories("include" ${Boost_INCLUDE_DIRS} "lib/SDL2-2.0.3/x86_64-w64-mingw32/include")
+include_directories("include" ${Boost_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
-# Not portable to linux...
-target_link_libraries(Chip8_bin ${Boost_LIBRARIES} "mingw32" "SDL2main" "SDL2.dll")
+link_directories(${SDL2_LIBRARY_DIRS})
+target_link_libraries(Chip8_bin ${SDL2_LDFLAGS} ${Boost_LIBRARIES})
 
 # Output path set to build type
 set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})
@@ -54,5 +55,3 @@ configure_file (
   "include/Chip8_config.h.in"
   "include/Chip8_config.h"
 )
-
-#add_executable(Chip8_bin ${source_files})

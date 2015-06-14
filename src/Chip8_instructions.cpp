@@ -1,5 +1,5 @@
 #include "Chip8.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 /*
 TODO

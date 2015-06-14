@@ -1,6 +1,6 @@
 #include <iostream>
 #include <boost/log/trivial.hpp>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "Chip8.h"
 #include "Chip8_config.h"
 #include "errors.h"
