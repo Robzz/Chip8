@@ -16,29 +16,44 @@
 
 #include "Chip8.h"
 #include <SDL.h>
+#include <boost/log/trivial.hpp>
 
 /* Clear the screen with the background color. */
 void Chip8::_instr00E0() {
-    SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 0xFF);
-    SDL_RenderClear(m_SDLRenderer);
-    SDL_RenderPresent(m_SDLRenderer);
+    SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, 0xFF);
+    SDL_RenderClear(m_sdlRenderer);
+    SDL_RenderPresent(m_sdlRenderer);
 }
 
 /* Return from a subroutine. */
 void Chip8::_instr00EE() {
-    _PC = _CallStack[_SP];
+    _PC = _callStack[_SP];
     --_SP;
 }
+/* CLS (Clear screen in HiRes mode) */
+void Chip8::_instr0230() {
+    _instr00E0();
+}
 
-/* Jump to the address pointed by NNN.*/
+/* Jump to the address pointed by NNN.
+   Switch to Hi-Res mode and jump to address 0x2C0 if it is the first instruction and the jump
+   address is 0x260 */
 void Chip8::_instr1NNN(unsigned short NNN) {
-    _PC = NNN;
+    if(_PC == 0x200 && NNN == 0x260 && m_mode == Normal) {
+        BOOST_LOG_TRIVIAL(info) << "Entering HiRes mode.";
+        SDL_SetWindowSize(m_sdlWindow, 64*m_pixelSize, 64*m_pixelSize);
+        m_mode = HiRes;
+        _PC = 0x2C0;
+    }
+    else {
+        _PC = NNN;
+    }
 }
 
 /* Call subroutine at NNN. */
 void Chip8::_instr2NNN(unsigned short NNN) {
     ++_SP;
-    _CallStack[_SP] = _PC;
+    _callStack[_SP] = _PC;
     _PC = NNN;
 }
 
@@ -135,7 +150,7 @@ void Chip8::_instr9XY0(byte X, byte Y) {
         _PC += 2;
 }
 
-/* Set the value if the register I to NNN. */
+/* Set the value of the register I to NNN. */
 void  Chip8::_instrANNN(unsigned short NNN) {
     _I = NNN;
 }
@@ -147,7 +162,7 @@ void Chip8::_instrBNNN(unsigned short NNN) {
 
 /* Generate a random byte and AND it with KK. The result is stored in Vx. */
 void Chip8::_instrCXKK(byte X, byte KK) {
-    byte r = m_RandGen() % 255;
+    byte r = m_randGen() % 255;
     _V[X] = r & KK;
 }
 
@@ -158,7 +173,7 @@ void Chip8::_instrDXYK(byte X, byte Y, byte K) {
     for(int i = 0 ; i != K ; ++i) {
         int xOffsetCounter = 0;
         for(int it = 0x80 ; it != 0 ; it /= 2) {
-            if(xorPixel(_V[X] + xOffsetCounter, _V[Y] + i, _Memory[_I + i] & it))
+            if(xorPixel(_V[X] + xOffsetCounter, _V[Y] + i, _memory[_I + i] & it))
                 collision = true;
             ++xOffsetCounter;
         }
@@ -166,68 +181,69 @@ void Chip8::_instrDXYK(byte X, byte Y, byte K) {
 
     // And then, render
     std::vector<SDL_Rect> pixel_rects;
-    for(int i = 0 ; i != 2048 ; ++i) {
-        if(_FrameBuffer[i]) {
+    int nPixels = (m_mode == Normal) ? 32*64 : 64*64;
+    for(int i = 0 ; i != nPixels ; ++i) {
+        if(_frameBuffer[i]) {
             SDL_Rect pix;
-            pix.x = (i % 64) * m_PixelSize;
-            pix.y = i / 64 * m_PixelSize;
-            pix.h = m_PixelSize;
-            pix.w = m_PixelSize;
+            pix.x = (i % 64) * m_pixelSize;
+            pix.y = i / 64 * m_pixelSize;
+            pix.h = m_pixelSize;
+            pix.w = m_pixelSize;
             pixel_rects.push_back(pix);
         }
     }
     if(pixel_rects.size()) {
-        SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 0xFF);
-        SDL_RenderClear(m_SDLRenderer);
-        SDL_SetRenderDrawColor(m_SDLRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        SDL_RenderFillRects(m_SDLRenderer, &pixel_rects[0], pixel_rects.size());
-        SDL_RenderPresent(m_SDLRenderer);
+        SDL_SetRenderDrawColor(m_sdlRenderer, 0, 0, 0, 0xFF);
+        SDL_RenderClear(m_sdlRenderer);
+        SDL_SetRenderDrawColor(m_sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+        SDL_RenderFillRects(m_sdlRenderer, &pixel_rects[0], pixel_rects.size());
+        SDL_RenderPresent(m_sdlRenderer);
     }
     _V[0xF] = (collision) ? 1 : 0;
 }
 
 /* Skip next instruction if key with the value of Vx is pressed. */
 void Chip8::_instrEX9E(byte X) {
-    m_KeyStateMutex.lock();
-    if(_KeyboardState[_V[X]])
+    m_keyStateMutex.lock();
+    if(_keyboardState[_V[X]])
         _PC+=2;
-    m_KeyStateMutex.unlock();
+    m_keyStateMutex.unlock();
 }
 
 /* Skip next instruction if key with the value of Vx is not pressed. */
 void Chip8::_instrEXA1(byte X) {
-    m_KeyStateMutex.lock();
-    if(!_KeyboardState[_V[X]])
+    m_keyStateMutex.lock();
+    if(!_keyboardState[_V[X]])
         _PC+=2;
-    m_KeyStateMutex.unlock();
+    m_keyStateMutex.unlock();
 }
 
 /* Load the value of the DT register into Vx. */
 void Chip8::_instrFX07(byte X) {
-    m_DTmutex.lock();
+    m_DTMutex.lock();
     _V[X] = _DT;
-    m_DTmutex.unlock();
+    m_DTMutex.unlock();
 }
 
 /* Wait for a key press, store the value of the key in Vx. */
 void Chip8::_instrFX0A(byte X) {
-    m_KeyStateMutex.lock();
+    m_keyStateMutex.lock();
     // Find a way to pause execution til a key is pressed...
-    m_KeyStateMutex.unlock();
+    m_keyStateMutex.unlock();
 }
 
 /* Set the DT register to the value of Vx. */
 void Chip8::_instrFX15(byte X) {
-    m_DTmutex.lock();
+    m_DTMutex.lock();
     _DT = _V[X];
-    m_DTmutex.unlock();
+    m_DTMutex.unlock();
 }
 
 /* Set the ST register to the value of Vx. */
 void Chip8::_instrFX18(byte X) {
-    m_DTmutex.lock();
+    m_DTMutex.lock();
     _ST = _V[X];
-    m_DTmutex.unlock();
+    m_DTMutex.unlock();
 }
 
 /* Add the value of Vx to I, and store the result in I. */
@@ -242,19 +258,19 @@ void Chip8::_instrFX29(byte X) {
 
 /* Store BCD representation of Vx in memory locations I, I+1, and I+2. */
 void Chip8::_instrFX33(byte X) {
-    _Memory[_I] = _V[X] / 100;
-    _Memory[_I] = (_V[X] % 100) / 10;
-    _Memory[_I] = _V[X] % 10;
+    _memory[_I] = _V[X] / 100;
+    _memory[_I] = (_V[X] % 100) / 10;
+    _memory[_I] = _V[X] % 10;
 }
 
 /* Store registers V0 through Vx in memory starting at location I. */
 void Chip8::_instrFX55(byte X) {
     for(int i = 0 ; i != 0x10; ++i)
-        _Memory[_I + i] = _V[i];
+        _memory[_I + i] = _V[i];
 }
 
 /* Read registers V0 through Vx from memory starting at location I. */
 void Chip8::_instrFX65(byte X) {
     for(int i = 0 ; i != 0x10; ++i)
-        _V[i] = _Memory[_I + i];
+        _V[i] = _memory[_I + i];
 }

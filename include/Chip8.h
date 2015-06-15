@@ -24,7 +24,6 @@
 
 #include "Chip8_Typedefs.h"
 #include "Chip8Config.h"
-#include "Dispatcher.h"
 
 // Forward declarations
 struct SDL_Window;
@@ -32,30 +31,31 @@ struct SDL_Renderer;
 
 class Chip8 {
   public:
-    enum Chip8_Keydown { Key_0 = 0x1, Key_1 = 0x2, Key_2 = 0x4, Key_3 = 0x8,
-            Key_4 = 0x10, Key_5 = 0x20, Key_6 = 0x40, Key_7 = 0x80,
-            Key_8 = 0x100, Key_9 = 0x200, Key_A = 0x400, Key_B = 0x800,
-            Key_C = 0x1000, Key_D = 0x2000, Key_E = 0x4000, Key_F = 0x8000
-                       };
+    enum Chip8_Keydown {Key_0 = 0x1,    Key_1 = 0x2,    Key_2 = 0x4,    Key_3 = 0x8,
+                        Key_4 = 0x10,   Key_5 = 0x20,   Key_6 = 0x40,   Key_7 = 0x80,
+                        Key_8 = 0x100,  Key_9 = 0x200,  Key_A = 0x400,  Key_B = 0x800,
+                        Key_C = 0x1000, Key_D = 0x2000, Key_E = 0x4000, Key_F = 0x8000};
+
+    enum Chip8_Mode {Normal, HiRes, Super, Mega};
     Chip8(Chip8Config* cfg);
     // Starts the emulation, the main loop takes place here
     void run();
     virtual ~Chip8() noexcept;
 
   private:
-    int m_PixelSize;
-    int m_Chip8CpuFreq;
-    std::string m_RomPath;
+    Chip8_Mode m_mode;
+    int m_pixelSize;
+    int m_chip8CpuFreq;
+    std::string m_romPath;
 
-    Dispatcher m_Dispatch; // Instruction dispatcher
-    SDL_Window* m_SDLWindow;
-    SDL_Renderer* m_SDLRenderer;
-    std::minstd_rand m_RandGen;
+    SDL_Window* m_sdlWindow;
+    SDL_Renderer* m_sdlRenderer;
+    std::minstd_rand m_randGen;
 
-    std::bitset<2048> _FrameBuffer;
-    std::bitset<16> _KeyboardState;
-    unsigned short _CallStack[16];
-    byte _Memory[4096];
+    std::bitset<4096> _frameBuffer;
+    std::bitset<16> _keyboardState;
+    unsigned short _callStack[16];
+    byte _memory[4096];
     byte _V[16];
     byte _SP;
     byte _DT;
@@ -63,11 +63,11 @@ class Chip8 {
     unsigned short _PC;
     unsigned short _I;
 
-    bool m_KeepThreadsAlive;
-    std::mutex m_DTmutex;
-    std::mutex m_KeyStateMutex;
-    std::thread m_CPUThread;
-    std::thread m_ClockThread;
+    bool m_keepThreadsAlive;
+    std::mutex m_DTMutex;
+    std::mutex m_keyStateMutex;
+    std::thread m_cpuThread;
+    std::thread m_clockThread;
 
     // Loads the ROM whose path is stored in m_Rompath
     int loadRom();
@@ -85,6 +85,7 @@ class Chip8 {
     // Chip8 instruction set
     void _instr00E0(); // CLS (CLear Screen)
     void _instr00EE(); // RET (RETurn from subroutine)
+    void _instr0230(); // CLS (Clear screen HiRes mode)
     void _instr1NNN(unsigned short NNN); // JMP
     void _instr2NNN(unsigned short NNN); // CALL
     void _instr3XKK(byte X, byte KK); // SE (Skip Equal)

@@ -30,91 +30,91 @@ using namespace boost;
 
 Chip8::Chip8(Chip8Config* cfg)
 try :
-    m_PixelSize(cfg->pixelSize()),
-    m_Chip8CpuFreq(cfg->cpuFreq()),
-    m_RomPath(cfg->romName()),
-    m_Dispatch(),
-    m_SDLWindow(),
-    m_SDLRenderer(),
-    m_RandGen(std::chrono::system_clock::now().time_since_epoch().count()),
-    _FrameBuffer(),
-    _KeyboardState(),
-    _CallStack(),
-    _Memory(),
+    m_mode(Normal),
+    m_pixelSize(cfg->pixelSize()),
+    m_chip8CpuFreq(cfg->cpuFreq()),
+    m_romPath(cfg->romName()),
+    m_sdlWindow(),
+    m_sdlRenderer(),
+    m_randGen(std::chrono::system_clock::now().time_since_epoch().count()),
+    _frameBuffer(),
+    _keyboardState(),
+    _callStack(),
+    _memory(),
     _V(),
     _SP(0),
     _DT(0),
     _ST(0),
-    _PC(0x0200),
+    _PC(0x200),
     _I(0),
-    m_KeepThreadsAlive(true),
-    m_DTmutex(),
-    m_KeyStateMutex(),
-    m_CPUThread(),
-    m_ClockThread() {
+    m_keepThreadsAlive(true),
+    m_DTMutex(),
+    m_keyStateMutex(),
+    m_cpuThread(),
+    m_clockThread() {
     // Initialize SDL
-    if(SDL_CreateWindowAndRenderer(64 * m_PixelSize, 32 * m_PixelSize, SDL_WINDOW_HIDDEN, &m_SDLWindow, &m_SDLRenderer)) {
+    if(SDL_CreateWindowAndRenderer(64 * m_pixelSize, 32 * m_pixelSize, SDL_WINDOW_HIDDEN, &m_sdlWindow, &m_sdlRenderer)) {
         throw Chip8InitError("Cannot initialize SDL");
     }
 
     BOOST_LOG_TRIVIAL(info) << "SDL initialized successfully";
 
     // Initialize stack and register arrays
-    memset(_CallStack, 0, 16*sizeof(_CallStack[0]));
-    memset(_CallStack, 0, 16*sizeof(_V[0]));
+    memset(_callStack, 0, 16*sizeof(_callStack[0]));
+    memset(_callStack, 0, 16*sizeof(_V[0]));
 
     // Initialize Sprite Data
-    _Memory[0] = 240;  _Memory[1] = 144;  _Memory[2] = 144;  _Memory[3] = 144;
-    _Memory[4] = 240;  _Memory[5] = 32;   _Memory[6] = 96;   _Memory[7] = 32;
-    _Memory[8] = 32;   _Memory[9] = 112;  _Memory[10] = 240; _Memory[11] = 16;
-    _Memory[12] = 240; _Memory[13] = 128; _Memory[14] = 240; _Memory[15] = 240;
-    _Memory[16] = 16;  _Memory[17] = 240; _Memory[18] = 16;  _Memory[19] = 240;
-    _Memory[20] = 144; _Memory[21] = 144; _Memory[22] = 240; _Memory[23] = 16;
-    _Memory[24] = 16;  _Memory[25] = 240; _Memory[26] = 128; _Memory[27] = 240;
-    _Memory[28] = 16;  _Memory[29] = 240; _Memory[30] = 240; _Memory[31] = 128;
-    _Memory[32] = 240; _Memory[33] = 144; _Memory[34] = 240; _Memory[35] = 240;
-    _Memory[36] = 16;  _Memory[37] = 32;  _Memory[38] = 64;  _Memory[39] = 64;
-    _Memory[40] = 240; _Memory[41] = 144; _Memory[42] = 240; _Memory[43] = 144;
-    _Memory[44] = 240; _Memory[45] = 240; _Memory[46] = 144; _Memory[47] = 240;
-    _Memory[48] = 16;  _Memory[49] = 240; _Memory[50] = 240; _Memory[51] = 144;
-    _Memory[52] = 240; _Memory[53] = 144; _Memory[54] = 144; _Memory[55] = 224;
-    _Memory[56] = 144; _Memory[57] = 224; _Memory[58] = 144; _Memory[59] = 224;
-    _Memory[60] = 240; _Memory[61] = 128; _Memory[62] = 128; _Memory[63] = 128;
-    _Memory[64] = 240; _Memory[65] = 224; _Memory[66] = 144; _Memory[67] = 144;
-    _Memory[68] = 144; _Memory[69] = 224; _Memory[70] = 240; _Memory[71] = 128;
-    _Memory[72] = 240; _Memory[73] = 128; _Memory[74] = 240; _Memory[75] = 240;
-    _Memory[76] = 128; _Memory[77] = 240; _Memory[78] = 128; _Memory[79] = 128;
+    _memory[0] = 240;  _memory[1] = 144;  _memory[2] = 144;  _memory[3] = 144;
+    _memory[4] = 240;  _memory[5] = 32;   _memory[6] = 96;   _memory[7] = 32;
+    _memory[8] = 32;   _memory[9] = 112;  _memory[10] = 240; _memory[11] = 16;
+    _memory[12] = 240; _memory[13] = 128; _memory[14] = 240; _memory[15] = 240;
+    _memory[16] = 16;  _memory[17] = 240; _memory[18] = 16;  _memory[19] = 240;
+    _memory[20] = 144; _memory[21] = 144; _memory[22] = 240; _memory[23] = 16;
+    _memory[24] = 16;  _memory[25] = 240; _memory[26] = 128; _memory[27] = 240;
+    _memory[28] = 16;  _memory[29] = 240; _memory[30] = 240; _memory[31] = 128;
+    _memory[32] = 240; _memory[33] = 144; _memory[34] = 240; _memory[35] = 240;
+    _memory[36] = 16;  _memory[37] = 32;  _memory[38] = 64;  _memory[39] = 64;
+    _memory[40] = 240; _memory[41] = 144; _memory[42] = 240; _memory[43] = 144;
+    _memory[44] = 240; _memory[45] = 240; _memory[46] = 144; _memory[47] = 240;
+    _memory[48] = 16;  _memory[49] = 240; _memory[50] = 240; _memory[51] = 144;
+    _memory[52] = 240; _memory[53] = 144; _memory[54] = 144; _memory[55] = 224;
+    _memory[56] = 144; _memory[57] = 224; _memory[58] = 144; _memory[59] = 224;
+    _memory[60] = 240; _memory[61] = 128; _memory[62] = 128; _memory[63] = 128;
+    _memory[64] = 240; _memory[65] = 224; _memory[66] = 144; _memory[67] = 144;
+    _memory[68] = 144; _memory[69] = 224; _memory[70] = 240; _memory[71] = 128;
+    _memory[72] = 240; _memory[73] = 128; _memory[74] = 240; _memory[75] = 240;
+    _memory[76] = 128; _memory[77] = 240; _memory[78] = 128; _memory[79] = 128;
 
     // Filling the rest with 0's
-    memset(&(_Memory[80]), 0, (4096-80)*sizeof(_Memory[0]));
+    memset(&(_memory[80]), 0, (4096-80)*sizeof(_memory[0]));
 } catch(...) {
     throw;
 }
 
 Chip8::~Chip8() noexcept {
     // Kill active threads
-    m_KeepThreadsAlive = false;
-    m_ClockThread.join();
-    m_CPUThread.join();
+    m_keepThreadsAlive = false;
+    m_clockThread.join();
+    m_cpuThread.join();
 
     // Destroy SDL context and we should be good to go
-    SDL_DestroyRenderer(m_SDLRenderer);
-    SDL_DestroyWindow(m_SDLWindow);
+    SDL_DestroyRenderer(m_sdlRenderer);
+    SDL_DestroyWindow(m_sdlWindow);
 }
 
 int Chip8::loadRom() {
-    ifstream romFile(m_RomPath, ios_base::in | ios_base::binary | ios_base::ate);
+    ifstream romFile(m_romPath, ios_base::in | ios_base::binary | ios_base::ate);
     if(!(romFile.is_open())) {
-        throw Chip8FileError(m_RomPath);
+        throw Chip8FileError(m_romPath);
     }
 
     // Get rom size and load it at memory address 0x0200
     size_t romSize = romFile.tellg();
     romFile.seekg(0);
-    romFile.read(reinterpret_cast<char*>(&(_Memory[0x0200])), romSize);
+    romFile.read(reinterpret_cast<char*>(&(_memory[0x0200])), romSize);
     romFile.close();
 
-    BOOST_LOG_TRIVIAL(info) << "Rom " << m_RomPath << " successfully loaded!";
+    BOOST_LOG_TRIVIAL(info) << "Rom " << m_romPath << " successfully loaded!";
 
     return 0;
 }
@@ -122,10 +122,10 @@ int Chip8::loadRom() {
 void Chip8::run() {
     // Load the ROM
     try {
-        BOOST_LOG_TRIVIAL(error) << "Loading ROM " << m_RomPath;
+        BOOST_LOG_TRIVIAL(error) << "Loading ROM " << m_romPath;
         loadRom();
-        m_CPUThread = thread(&Chip8::_CPUThread, this);
-        m_ClockThread = thread(&Chip8::_ClockThread, this);
+        m_cpuThread = thread(&Chip8::_CPUThread, this);
+        m_clockThread = thread(&Chip8::_ClockThread, this);
     } catch(Chip8FileError const& e) {
         BOOST_LOG_TRIVIAL(error) << "Error loading rom " << e.what();
         throw;
@@ -142,74 +142,74 @@ void Chip8::run() {
 
     // TODO : is this really necessary? There isn't a GUI anyway, no point in hiding the window.
     // We can now show the SDL window, and hide it when the loop ends.
-    SDL_ShowWindow(m_SDLWindow);
+    SDL_ShowWindow(m_sdlWindow);
 
     while(!end) {
         SDL_WaitEvent(&event);
         if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) { // If a key was pressed or released...
             bool pressed = (event.type == SDL_KEYDOWN); // find out which one it was...
-            m_KeyStateMutex.lock();
+            m_keyStateMutex.lock();
             switch(event.key.keysym.sym) { // and update keystate
             /*
             TODO
             Not pretty. There's gotta be a better, less dumb way.
             */
             case SDLK_KP_0:
-                _KeyboardState.set(0, pressed);
+                _keyboardState.set(0, pressed);
                 break;
             case SDLK_KP_1:
-                _KeyboardState.set(7, pressed);
+                _keyboardState.set(7, pressed);
                 break;
             case SDLK_KP_2:
-                _KeyboardState.set(8, pressed);
+                _keyboardState.set(8, pressed);
                 break;
             case SDLK_KP_3:
-                _KeyboardState.set(9, pressed);
+                _keyboardState.set(9, pressed);
                 break;
             case SDLK_KP_4:
-                _KeyboardState.set(4, pressed);
+                _keyboardState.set(4, pressed);
                 break;
             case SDLK_KP_5:
-                _KeyboardState.set(5, pressed);
+                _keyboardState.set(5, pressed);
                 break;
             case SDLK_KP_6:
-                _KeyboardState.set(6, pressed);
+                _keyboardState.set(6, pressed);
                 break;
             case SDLK_KP_7:
-                _KeyboardState.set(1, pressed);
+                _keyboardState.set(1, pressed);
                 break;
             case SDLK_KP_8:
-                _KeyboardState.set(2, pressed);
+                _keyboardState.set(2, pressed);
                 break;
             case SDLK_KP_9:
-                _KeyboardState.set(3, pressed);
+                _keyboardState.set(3, pressed);
                 break;
             case SDLK_a:
-                _KeyboardState.set(0xA, pressed);
+                _keyboardState.set(0xA, pressed);
                 break;
             case SDLK_b:
-                _KeyboardState.set(0xB, pressed);
+                _keyboardState.set(0xB, pressed);
                 break;
             case SDLK_c:
-                _KeyboardState.set(0xC, pressed);
+                _keyboardState.set(0xC, pressed);
                 break;
             case SDLK_d:
-                _KeyboardState.set(0xD, pressed);
+                _keyboardState.set(0xD, pressed);
                 break;
             case SDLK_e:
-                _KeyboardState.set(0xE, pressed);
+                _keyboardState.set(0xE, pressed);
                 break;
             case SDLK_f:
-                _KeyboardState.set(0xF, pressed);
+                _keyboardState.set(0xF, pressed);
                 break;
             default:
                 break;
             }
-            m_KeyStateMutex.unlock();
+            m_keyStateMutex.unlock();
         } else if(event.type == SDL_QUIT)
             end = true;
     }
-    SDL_HideWindow(m_SDLWindow);
+    SDL_HideWindow(m_sdlWindow);
 }
 
 bool Chip8::xorPixel(int x, int y, bool val) {
@@ -219,8 +219,8 @@ bool Chip8::xorPixel(int x, int y, bool val) {
         y %= 32;
     }
 
-    bool curState = _FrameBuffer[x + 64 * y];
-    _FrameBuffer.set(x + 64 * y, curState ^ val);
+    bool curState = _frameBuffer[x + 64 * y];
+    _frameBuffer.set(x + 64 * y, curState ^ val);
 
     // Collision detection
     if(curState && val) {
@@ -235,16 +235,16 @@ void Chip8::_ClockThread() {
     // Well, after some thinking, it isn't. This value is what actually speeds up/slows down the
     // emulation, not really the CPU clock. I should experiment with the values to make sure.
     std::chrono::microseconds step(16666);
-    while(m_KeepThreadsAlive) {
+    while(m_keepThreadsAlive) {
         if(_DT || _ST) {
-            m_DTmutex.lock();
+            m_DTMutex.lock();
             if(_DT) {
                 --_DT;
             }
             if(_ST) {
                 --_ST;
             }
-            m_DTmutex.unlock();
+            m_DTMutex.unlock();
         }
         std::this_thread::sleep_for(step);
     }
@@ -255,18 +255,17 @@ void Chip8::_CPUThread() {
     unsigned short NNN;
 
     // Compute clock cycle time
-    std::chrono::microseconds cycleDuration(1000000 / m_Chip8CpuFreq);
+    std::chrono::microseconds cycleDuration(1000000 / m_chip8CpuFreq);
 
-    while(m_KeepThreadsAlive) {
+    while(m_keepThreadsAlive) {
         std::chrono::high_resolution_clock::time_point instrStartTime = std::chrono::high_resolution_clock::now();
-        lowByte = _Memory[_PC + 1];
-        hiByte = _Memory[_PC];
+        lowByte = _memory[_PC + 1];
+        hiByte = _memory[_PC];
         code = (hiByte & 0xF0) / 0x10;
         X = hiByte & 0x0F;
         Y = (lowByte & 0xF0) / 0x10;
         K = lowByte & 0x0F;
         NNN = (X * 0x100) + lowByte;
-        _PC+=2;
 
         try {
             /*
@@ -277,11 +276,17 @@ void Chip8::_CPUThread() {
             case 0:
                 if(NNN == 0x0E0) {
                     _instr00E0();
+                    _PC+=2;
                     break;
-                } else if(NNN == 0x0EE) {
+                }
+                else if(NNN == 0x0EE) {
                     _instr00EE();
                     break;
-                } else { // opcode 0nnn, ignored
+                }
+                else if(NNN == 0x230) {
+                    _instr0230();
+                }
+                else { // opcode 0nnn, ignored
                     break;
                 }
             case 1:
@@ -393,6 +398,8 @@ void Chip8::_CPUThread() {
             default:
                 throw Chip8UnknownOpcodeError(hiByte * 0x100 + lowByte);
             }
+            if(code != 0xB && code != 0x1 && code != 0x2)
+                _PC+=2;
             this_thread::sleep_until(instrStartTime + cycleDuration);
         } catch(Chip8UnknownOpcodeError e) {
             cerr << "Warning : unknown opcode. Trying to continue..." << endl;
