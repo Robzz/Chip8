@@ -14,13 +14,25 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CHIP8_TYPEDEFS_H_INCLUDED
-#define CHIP8_TYPEDEFS_H_INCLUDED
+#include "SdlFrame.h"
 
-#include <cstdint>
+SdlFrame::SdlFrame() :
+    wxFrame()
+{
+    //ctor
+}
 
-typedef unsigned char u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+SdlFrame::~SdlFrame()
+{ }
 
-#endif // CHIP8_TYPEDEFS_H_INCLUDED
+void SdlFrame::OnHello(wxCommandEvent& event) {
+
+}
+
+void SdlFrame::OnExit(wxCommandEvent& event) {
+
+}
+
+void SdlFrame::OnAbout(wxCommandEvent& event) {
+
+}

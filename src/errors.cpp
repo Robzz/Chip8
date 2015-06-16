@@ -60,7 +60,7 @@ const char* Chip8InitError::what() const noexcept {
 }
 
 
-Chip8UnknownOpcodeError::Chip8UnknownOpcodeError(unsigned short opCode) noexcept :
+Chip8UnknownOpcodeError::Chip8UnknownOpcodeError(u16 opCode) noexcept :
     m_opCode(opCode)
 { }
 

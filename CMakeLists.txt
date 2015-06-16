@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.2)
 project (Chip8)
 
 # Version number
@@ -7,6 +7,10 @@ set(Chip8_VERSION_MINOR 1)
 set(Chip8_PROGRAM_NAME "Chip8++")
 
 # cmake_policy(SET CMP0015 OLD)
+
+# Locate wxWidgets
+include(FindwxWidgets)
+find_package(wxWidgets COMPONENTS core base)
 
 # Find the boost libraries the project depends on
 include(FindBoost)
@@ -45,10 +49,10 @@ if(NOT WIN32)
 endif()
 
 # Include directories
-include_directories("include" ${Boost_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+include_directories("include" ${Boost_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS})
 
-link_directories(${SDL2_LIBRARY_DIRS})
-target_link_libraries(Chip8_bin ${SDL2_LDFLAGS} ${Boost_LIBRARIES})
+link_directories(${SDL2_LIBRARY_DIRS} ${wxWidgets_LIBRARY_DIRS})
+target_link_libraries(Chip8_bin ${SDL2_LDFLAGS} ${Boost_LIBRARIES} ${wxWidgets_LIBRARIES})
 
 # Output path set to build type
 set(EXECUTABLE_OUTPUT_PATH bin)

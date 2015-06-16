@@ -14,13 +14,29 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CHIP8_TYPEDEFS_H_INCLUDED
-#define CHIP8_TYPEDEFS_H_INCLUDED
+#ifndef SDLFRAME_H
+#define SDLFRAME_H
 
-#include <cstdint>
+#include <wx/wx.h>
 
-typedef unsigned char u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+class SdlFrame : public wxFrame
+{
+    public:
+        enum menuIds {ID_Hello};
+        SdlFrame();
+        virtual ~SdlFrame();
 
-#endif // CHIP8_TYPEDEFS_H_INCLUDED
+        void OnHello(wxCommandEvent& event);
+        void OnExit(wxCommandEvent& event);
+        void OnAbout(wxCommandEvent& event);
+
+        wxDECLARE_EVENT_TABLE();
+};
+
+wxBEGIN_EVENT_TABLE(SdlFrame, wxFrame)
+    EVT_MENU(ID_Hello,   SdlFrame::OnHello)
+    EVT_MENU(wxID_EXIT,  SdlFrame::OnExit)
+    EVT_MENU(wxID_ABOUT, SdlFrame::OnAbout)
+wxEND_EVENT_TABLE()
+
+#endif // SDLFRAME_H

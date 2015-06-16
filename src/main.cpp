@@ -21,7 +21,10 @@
 
 #include "Chip8.h"
 #include "Chip8_config.h"
+#include "Chip8App.h"
 #include "errors.h"
+
+wxIMPLEMENT_APP_NO_MAIN(Chip8App);
 
 using namespace std;
 using namespace boost;
@@ -34,8 +37,16 @@ int main(int argc, char* argv[]) {
     log::add_file_log("chip8.log");
     log::core::get()->set_filter(log::trivial::severity >= log::trivial::info);
     BOOST_LOG_TRIVIAL(info) << "Logging modules initialized, launching chip8++!";
-
     cout << "Starting Chip8_PROGRAM_NAME v"  << Chip8_VERSION_MAJOR << '.' << Chip8_VERSION_MINOR << endl;
+
+    // Initialize wxWidgets
+    if(!wxEntryStart(argc, argv)) {
+        BOOST_LOG_TRIVIAL(fatal) << "Cannot initialize wxWidgets, aborting...";
+        cerr << "Fatal initialization error, see log file for details." << endl;
+        return 1;
+    }
+    BOOST_LOG_TRIVIAL(info) << "wxWidgets initialized succesfully.";
+
     Chip8* context;
     try {
         Chip8Config* cfg = Chip8Config::parseCommandLineAndCfg(argc, argv);
@@ -60,5 +71,7 @@ int main(int argc, char* argv[]) {
         BOOST_LOG_TRIVIAL(fatal) << "Unexpected exception.";
         throw;
     }
+
+    wxEntryCleanup();
     return 0;
 }

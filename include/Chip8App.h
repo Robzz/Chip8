@@ -14,13 +14,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CHIP8_TYPEDEFS_H_INCLUDED
-#define CHIP8_TYPEDEFS_H_INCLUDED
+#ifndef CHIP8APP_H
+#define CHIP8APP_H
 
-#include <cstdint>
+#include <wx/wx.h>
+#include "Chip8.h"
 
-typedef unsigned char u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+class Chip8App : public wxApp
+{
+    public:
+        Chip8App();
+        virtual ~Chip8App();
 
-#endif // CHIP8_TYPEDEFS_H_INCLUDED
+        virtual bool onInit();
+
+    private:
+        Chip8* m_emu;
+};
+
+#endif // CHIP8APP_H

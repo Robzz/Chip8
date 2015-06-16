@@ -14,13 +14,28 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CHIP8_TYPEDEFS_H_INCLUDED
-#define CHIP8_TYPEDEFS_H_INCLUDED
+#ifndef INSTRUCTION_H
+#define INSTRUCTION_H
 
-#include <cstdint>
+#include "Chip8_Typedefs.h"
 
-typedef unsigned char u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+class Instruction
+{
+    public:
+        Instruction(u8 *opCode);
+        Instruction(const Instruction& other);
+        Instruction& operator=(const Instruction& other);
+        u16 opCode() const;
+        u16 NNN() const;
+        u8 low() const;
+        u8 high() const;
+        u8 code() const;
+        u8 X() const;
+        u8 Y() const;
+        u8 K() const;
 
-#endif // CHIP8_TYPEDEFS_H_INCLUDED
+    private:
+        u16 m_opCode;
+};
+
+#endif // INSTRUCTION_H

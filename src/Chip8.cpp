@@ -251,21 +251,21 @@ void Chip8::_ClockThread() {
 }
 
 void Chip8::_CPUThread() {
-    byte lowByte, hiByte, code, X, Y, K;
-    unsigned short NNN;
+    u8 lowu8, hiu8, code, X, Y, K;
+    u16 NNN;
 
     // Compute clock cycle time
     std::chrono::microseconds cycleDuration(1000000 / m_chip8CpuFreq);
 
     while(m_keepThreadsAlive) {
         std::chrono::high_resolution_clock::time_point instrStartTime = std::chrono::high_resolution_clock::now();
-        lowByte = _memory[_PC + 1];
-        hiByte = _memory[_PC];
-        code = (hiByte & 0xF0) / 0x10;
-        X = hiByte & 0x0F;
-        Y = (lowByte & 0xF0) / 0x10;
-        K = lowByte & 0x0F;
-        NNN = (X * 0x100) + lowByte;
+        lowu8 = _memory[_PC + 1];
+        hiu8 = _memory[_PC];
+        code = (hiu8 & 0xF0) / 0x10;
+        X = hiu8 & 0x0F;
+        Y = (lowu8 & 0xF0) / 0x10;
+        K = lowu8 & 0x0F;
+        NNN = (X * 0x100) + lowu8;
 
         try {
             /*
@@ -296,20 +296,20 @@ void Chip8::_CPUThread() {
                 _instr2NNN(NNN);
                 break;
             case 3:
-                _instr3XKK(X, lowByte);
+                _instr3XKK(X, lowu8);
                 break;
             case 4:
-                _instr4XKK(X, lowByte);
+                _instr4XKK(X, lowu8);
                 break;
             case 5:
                 if(!K)
                     _instr5XY0(X, Y);
                 break;
             case 6:
-                _instr6XKK(X, lowByte);
+                _instr6XKK(X, lowu8);
                 break;
             case 7:
-                _instr7XKK(X, lowByte);
+                _instr7XKK(X, lowu8);
                 break;
             case 8:
                 switch(K) {
@@ -352,20 +352,20 @@ void Chip8::_CPUThread() {
                 _instrBNNN(NNN);
                 break;
             case 0xC:
-                _instrCXKK(X, lowByte);
+                _instrCXKK(X, lowu8);
                 break;
             case 0xD:
                 _instrDXYK(X, Y, K);
                 break;
             case 0xE:
-                if(lowByte == 0x9E) {
+                if(lowu8 == 0x9E) {
                     _instrEX9E(X);
-                } else if(lowByte == 0xA1) {
+                } else if(lowu8 == 0xA1) {
                     _instrEXA1(X);
                 }
                 break;
             case 0xF:
-                switch(lowByte) {
+                switch(lowu8) {
                 case 0x07:
                     _instrFX07(X);
                     break;
@@ -396,7 +396,7 @@ void Chip8::_CPUThread() {
                 }
                 break;
             default:
-                throw Chip8UnknownOpcodeError(hiByte * 0x100 + lowByte);
+                throw Chip8UnknownOpcodeError(hiu8 * 0x100 + lowu8);
             }
             if(code != 0xB && code != 0x1 && code != 0x2)
                 _PC+=2;

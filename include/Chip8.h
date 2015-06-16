@@ -54,14 +54,14 @@ class Chip8 {
 
     std::bitset<4096> _frameBuffer;
     std::bitset<16> _keyboardState;
-    unsigned short _callStack[16];
-    byte _memory[4096];
-    byte _V[16];
-    byte _SP;
-    byte _DT;
-    byte _ST;
-    unsigned short _PC;
-    unsigned short _I;
+    u16 _callStack[16];
+    u8 _memory[4096];
+    u8 _V[16];
+    u8 _SP;
+    u8 _DT;
+    u8 _ST;
+    u16 _PC;
+    u16 _I;
 
     bool m_keepThreadsAlive;
     std::mutex m_DTMutex;
@@ -86,38 +86,38 @@ class Chip8 {
     void _instr00E0(); // CLS (CLear Screen)
     void _instr00EE(); // RET (RETurn from subroutine)
     void _instr0230(); // CLS (Clear screen HiRes mode)
-    void _instr1NNN(unsigned short NNN); // JMP
-    void _instr2NNN(unsigned short NNN); // CALL
-    void _instr3XKK(byte X, byte KK); // SE (Skip Equal)
-    void _instr4XKK(byte X, byte KK); // SNE (Skip Not Equal)
-    void _instr5XY0(byte X, byte Y); // SE
-    void _instr6XKK(byte X, byte KK); // LD (load immediate)
-    void _instr7XKK(byte X, byte KK); // ADD
-    void _instr8XY0(byte X, byte Y); // LD (load)
-    void _instr8XY1(byte X, byte Y); // OR
-    void _instr8XY2(byte X, byte Y); // AND
-    void _instr8XY3(byte X, byte Y); // XOR
-    void _instr8XY4(byte X, byte Y); // ADD
-    void _instr8XY5(byte X, byte Y); // SUB
-    void _instr8XY6(byte X); // SHR (SHift Right)
-    void _instr8XY7(byte X, byte Y); // SUBN
-    void _instr8XYE(byte X); // SHL (SHift Left)
-    void _instr9XY0(byte X, byte Y); // SNE
-    void _instrANNN(unsigned short NNN); // LD I
-    void _instrBNNN(unsigned short NNN); // JMP
-    void _instrCXKK(byte X, byte KK); // RND
-    void _instrDXYK(byte X, byte Y, byte K); // DRW
-    void _instrEX9E(byte X); // SKP (SKip Pressed)
-    void _instrEXA1(byte X); // SKNP (SKip Not Pressed)
-    void _instrFX07(byte X);
-    void _instrFX0A(byte X);
-    void _instrFX15(byte X);
-    void _instrFX18(byte X);
-    void _instrFX1E(byte X);
-    void _instrFX29(byte X);
-    void _instrFX33(byte X);
-    void _instrFX55(byte X);
-    void _instrFX65(byte X);
+    void _instr1NNN(u16 NNN); // JMP
+    void _instr2NNN(u16 NNN); // CALL
+    void _instr3XKK(u8 X, u8 KK); // SE (Skip Equal)
+    void _instr4XKK(u8 X, u8 KK); // SNE (Skip Not Equal)
+    void _instr5XY0(u8 X, u8 Y); // SE
+    void _instr6XKK(u8 X, u8 KK); // LD (load immediate)
+    void _instr7XKK(u8 X, u8 KK); // ADD
+    void _instr8XY0(u8 X, u8 Y); // LD (load)
+    void _instr8XY1(u8 X, u8 Y); // OR
+    void _instr8XY2(u8 X, u8 Y); // AND
+    void _instr8XY3(u8 X, u8 Y); // XOR
+    void _instr8XY4(u8 X, u8 Y); // ADD
+    void _instr8XY5(u8 X, u8 Y); // SUB
+    void _instr8XY6(u8 X); // SHR (SHift Right)
+    void _instr8XY7(u8 X, u8 Y); // SUBN
+    void _instr8XYE(u8 X); // SHL (SHift Left)
+    void _instr9XY0(u8 X, u8 Y); // SNE
+    void _instrANNN(u16 NNN); // LD I
+    void _instrBNNN(u16 NNN); // JMP
+    void _instrCXKK(u8 X, u8 KK); // RND
+    void _instrDXYK(u8 X, u8 Y, u8 K); // DRW
+    void _instrEX9E(u8 X); // SKP (SKip Pressed)
+    void _instrEXA1(u8 X); // SKNP (SKip Not Pressed)
+    void _instrFX07(u8 X);
+    void _instrFX0A(u8 X);
+    void _instrFX15(u8 X);
+    void _instrFX18(u8 X);
+    void _instrFX1E(u8 X);
+    void _instrFX29(u8 X);
+    void _instrFX33(u8 X);
+    void _instrFX55(u8 X);
+    void _instrFX65(u8 X);
 
     Chip8();
 };

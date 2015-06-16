@@ -20,6 +20,8 @@
 #include <exception>
 #include <string>
 
+#include "Chip8_Typedefs.h"
+
 class Chip8Exception: public std::exception
 {
   public:
@@ -55,7 +57,7 @@ class Chip8InitError : public Chip8Exception
 class Chip8UnknownOpcodeError : public Chip8Exception
 {
   public:
-    Chip8UnknownOpcodeError(unsigned short opCode = 0) noexcept;
+    Chip8UnknownOpcodeError(u16 opCode = 0) noexcept;
     virtual ~Chip8UnknownOpcodeError() noexcept;
     Chip8UnknownOpcodeError(const Chip8UnknownOpcodeError& other) noexcept;
     virtual const char* what() const noexcept;

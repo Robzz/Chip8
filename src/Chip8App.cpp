@@ -14,13 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CHIP8_TYPEDEFS_H_INCLUDED
-#define CHIP8_TYPEDEFS_H_INCLUDED
+#include "Chip8App.h"
 
-#include <cstdint>
+Chip8App::Chip8App() :
+    wxApp(),
+    m_emu(nullptr)
+{ }
 
-typedef unsigned char u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+Chip8App::~Chip8App()
+{ }
 
-#endif // CHIP8_TYPEDEFS_H_INCLUDED
+bool Chip8App::onInit() {
+    //m_emu = new Chip8()
+}
