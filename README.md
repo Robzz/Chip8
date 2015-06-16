@@ -1,8 +1,10 @@
 # Chip8++
-A Chip8 emulator written in C++ that I made a couple years ago.
-I am currently refactoring it a little. The code will remain ugly until I'm done.
+A Chip8 emulator written in C++ that I made a couple years ago to learn about emulation.
+I am currently refactoring it a little and adding new features.
+The code will probably remain ugly for a little while.
 
 Required libraries:
+* wxWidgets >= 3.0
 * Boost
     * log
     * program_options
